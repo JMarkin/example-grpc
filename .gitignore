@@ -323,5 +323,5 @@ tags
 # Support for Project snippet scope
 
 # End of https://www.toptal.com/developers/gitignore/api/python,git,vim,pycharm,visualstudiocode
-protofiles/*.pyi
-protofiles/*.py
+#protofiles/*.pyi
+#protofiles/*.py
