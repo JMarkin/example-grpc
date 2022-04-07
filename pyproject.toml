@@ -1,0 +1,30 @@
+[tool.poetry]
+name = "app"
+version = "1.0.0"
+description = ""
+authors = ["jmarkin <me@jmarkin.ru>"]
+
+[tool.poetry.dependencies]
+python = ">=3.7,<4.0"
+grpcio-tools = "^1.45.0"
+grpcio = "^1.45.0"
+
+[tool.poetry.dev-dependencies]
+yapf = "^0.32.0"
+toml = "^0.10.2"
+mypy-protobuf = "^3.2.0"
+poethepoet = "^0.13.1"
+
+[tool.poe.tasks.run]
+cmd = "python -m app"
+help = "start app"
+
+
+[tool.poe.tasks.protogen]
+cmd = "python -m grpc_tools.protoc -I . --python_out=. --mypy_out=. --grpc_python_out=. protofiles/**/*.proto"
+help = "Generate files from proto"
+
+
+[build-system]
+requires = ["poetry-core==1.0.4"]
+build-backend = "poetry.core.masonry.api"
