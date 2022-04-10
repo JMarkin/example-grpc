@@ -3,4 +3,4 @@ Description=app Service
 
 [Service]
 WorkingDirectory=/tmp
-ExecStart=python -m app
+ExecStart=python3 -m app

@@ -4,7 +4,7 @@ Release:        1%{?dist}
 Summary:        Example Python app
 
 License:        MIT
-URL:            https://scm.x5.ru/app
+URL:            https://github.com/jmarkin/app
 Source:         %{url}/archive/v%{version}/app-%{version}.tar.gz
 
 BuildArch:      noarch
@@ -13,6 +13,8 @@ BuildRequires:  pyproject-rpm-macros
 BuildRequires:  python3dist(poetry-core)
 BuildRequires:  python3dist(toml)
 BuildRequires:  systemd-rpm-macros
+
+Requires:  systemd-units
 
 %global _description %{expand:
     Какое-то описание
@@ -44,17 +46,18 @@ Summary:        %{summary}
 
 %install
 %pyproject_install
-mv /usr/lib/python3.10/site-packages/buildfiles/%{name}.service %{_sysconfdir}/%{name}.service
-rm -r /usr/lib/python3.10/site-packages/buildfiles
-
 %pyproject_save_files app protofiles
+
+mkdir -p %{buildroot}/etc/systemd/system/
+install %{buildroot}%{python3_sitelib}/buildfiles/%{name}.service %{buildroot}/etc/systemd/system/%{name}.service
+rm %{buildroot}%{python3_sitelib}/buildfiles/%{name}.service
 
 %check
 %pyproject_check_import
 
 
 %files -n python3-app -f %{pyproject_files}
-%{_sysconfdir}/%{name}.service
+/etc/systemd/system/%{name}.service
 
 
 %changelog

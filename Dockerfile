@@ -1,4 +1,4 @@
-FROM python:3.10-slim as ci
+FROM python:3.9-slim as ci
 
 RUN pip install poetry && mkdir /app
 WORKDIR /app
@@ -12,6 +12,30 @@ COPY . /app
 
 RUN poetry run poe protogen && poetry build -f sdist
 
+FROM fedora:37 as buildgrpcio
+
+RUN dnf install -y rpmdevtools python3-devel make automake gcc gcc-c++
+RUN python3 -m pip install -U pip setuptools Cython
+
+
+# build from soruce grpcio...
+# old rpm on repository
+ENV GRPC_VER v1.45.2
+
+RUN cd /tmp && \
+    git clone -b $GRPC_VER https://github.com/grpc/grpc && \
+    cd grpc && \
+    git submodule update --init
+
+
+RUN cd /tmp/grpc && \
+    python3 setup.py bdist_rpm && \
+    cd tools/distrib/python/grpcio_tools && \
+    python3 ../make_grpcio_tools.py && \
+    python3 setup.py bdist_rpm
+
+
+
 FROM fedora:37 as buildrpm
 
 RUN dnf install -y rpmdevtools
@@ -22,35 +46,18 @@ RUN mkdir -p $HOME/rpmbuild/{BUILD,RPMS,SOURCES,SPECS,SRPMS} && \
 
 WORKDIR $HOME
 
-RUN dnf install -y git gcc python3-devel 'dnf-command(builddep)'
-
-# build from soruce grpcio...
-# old rpm on repository
-ENV GRPC_VER v1.44.0
-
-RUN cd /tmp && \
-    git clone -b $GRPC_VER https://github.com/grpc/grpc && \
-    cd grpc && \
-    git submodule update --init
-
-RUN dnf install -y make automake gcc gcc-c++
-
-RUN python3 -m pip install -U pip setuptools Cython
-
-RUN cd /tmp/grpc && \
-    python3 setup.py bdist_rpm && \
-    cd tools/distrib/python/grpcio_tools && \
-    python3 ../make_grpcio_tools.py && \
-    python3 setup.py bdist_rpm  && \
-    cd $HOME
+RUN dnf install -y 'dnf-command(builddep)'
 
 
 COPY ./buildfiles/app.spec $HOME/rpmbuild/SPECS
 
 ENV SPEC=$HOME/rpmbuild/SPECS/app.spec
 
-RUN dnf install -y $(rpmspec --query --buildrequires $SPEC | xargs)
+RUN dnf builddep -y --spec $SPEC
 
+COPY --from=buildgrpcio /tmp/grpc/python_build/bdist.linux-x86_64/rpm/RPMS/* $HOME/rpmbuild/RPMS/
+
+RUN dnf install -y $HOME/rpmbuild/RPMS/*.rpm
 
 COPY --from=ci /app/dist/ $HOME/rpmbuild/SOURCES/
 
@@ -59,13 +66,13 @@ RUN rpmbuild -ba $SPEC || \
     rpmbuild -bb $SPEC
 
 
-# FROM fedora:37 as app
-#
-# COPY --from=buildrpm /root/rpmbuild/RPMS/ /tmp/
-#
-# RUN dnf install -y /tmp/noarch/*.rpm
-#
-# EXPOSE 50051
-# CMD [ "/sbin/init" ]
+FROM fedora:37 as app
+
+COPY --from=buildrpm /root/rpmbuild/RPMS/ /tmp/
+
+RUN dnf install -y systemd-units /tmp/noarch/*.rpm
+
+EXPOSE 50051
+CMD [ "/sbin/init" ]
 
 STOPSIGNAL SIGRTMIN+3
