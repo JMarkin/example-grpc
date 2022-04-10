@@ -3,7 +3,6 @@
 # source: protofiles/echo.proto
 """Generated protocol buffer code."""
 from google.protobuf import descriptor as _descriptor
-from google.protobuf import descriptor_pool as _descriptor_pool
 from google.protobuf import message as _message
 from google.protobuf import reflection as _reflection
 from google.protobuf import symbol_database as _symbol_database
@@ -14,13 +13,125 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x15protofiles/echo.proto\x12\x04\x65\x63ho\"1\n\x0b\x45\x63hoRequest\x12\r\n\x05value\x18\x01 \x01(\t\x12\x13\n\x0b\x65xtra_times\x18\x02 \x01(\r\"\x1e\n\x0c\x45\x63hoResponse\x12\x0e\n\x06values\x18\x01 \x03(\t\"#\n\x12\x45\x63hoStreamResponse\x12\r\n\x05value\x18\x01 \x01(\t2r\n\x04\x45\x63ho\x12-\n\x04\x45\x63ho\x12\x11.echo.EchoRequest\x1a\x12.echo.EchoResponse\x12;\n\nEchoStream\x12\x11.echo.EchoRequest\x1a\x18.echo.EchoStreamResponse0\x01\x62\x06proto3')
+DESCRIPTOR = _descriptor.FileDescriptor(
+  name='protofiles/echo.proto',
+  package='echo',
+  syntax='proto3',
+  serialized_options=None,
+  create_key=_descriptor._internal_create_key,
+  serialized_pb=b'\n\x15protofiles/echo.proto\x12\x04\x65\x63ho\"1\n\x0b\x45\x63hoRequest\x12\r\n\x05value\x18\x01 \x01(\t\x12\x13\n\x0b\x65xtra_times\x18\x02 \x01(\r\"\x1e\n\x0c\x45\x63hoResponse\x12\x0e\n\x06values\x18\x01 \x03(\t\"#\n\x12\x45\x63hoStreamResponse\x12\r\n\x05value\x18\x01 \x01(\t2r\n\x04\x45\x63ho\x12-\n\x04\x45\x63ho\x12\x11.echo.EchoRequest\x1a\x12.echo.EchoResponse\x12;\n\nEchoStream\x12\x11.echo.EchoRequest\x1a\x18.echo.EchoStreamResponse0\x01\x62\x06proto3'
+)
 
 
 
-_ECHOREQUEST = DESCRIPTOR.message_types_by_name['EchoRequest']
-_ECHORESPONSE = DESCRIPTOR.message_types_by_name['EchoResponse']
-_ECHOSTREAMRESPONSE = DESCRIPTOR.message_types_by_name['EchoStreamResponse']
+
+_ECHOREQUEST = _descriptor.Descriptor(
+  name='EchoRequest',
+  full_name='echo.EchoRequest',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='value', full_name='echo.EchoRequest.value', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='extra_times', full_name='echo.EchoRequest.extra_times', index=1,
+      number=2, type=13, cpp_type=3, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=31,
+  serialized_end=80,
+)
+
+
+_ECHORESPONSE = _descriptor.Descriptor(
+  name='EchoResponse',
+  full_name='echo.EchoResponse',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='values', full_name='echo.EchoResponse.values', index=0,
+      number=1, type=9, cpp_type=9, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=82,
+  serialized_end=112,
+)
+
+
+_ECHOSTREAMRESPONSE = _descriptor.Descriptor(
+  name='EchoStreamResponse',
+  full_name='echo.EchoStreamResponse',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='value', full_name='echo.EchoStreamResponse.value', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=114,
+  serialized_end=149,
+)
+
+DESCRIPTOR.message_types_by_name['EchoRequest'] = _ECHOREQUEST
+DESCRIPTOR.message_types_by_name['EchoResponse'] = _ECHORESPONSE
+DESCRIPTOR.message_types_by_name['EchoStreamResponse'] = _ECHOSTREAMRESPONSE
+_sym_db.RegisterFileDescriptor(DESCRIPTOR)
+
 EchoRequest = _reflection.GeneratedProtocolMessageType('EchoRequest', (_message.Message,), {
   'DESCRIPTOR' : _ECHOREQUEST,
   '__module__' : 'protofiles.echo_pb2'
@@ -42,16 +153,41 @@ EchoStreamResponse = _reflection.GeneratedProtocolMessageType('EchoStreamRespons
   })
 _sym_db.RegisterMessage(EchoStreamResponse)
 
-_ECHO = DESCRIPTOR.services_by_name['Echo']
-if _descriptor._USE_C_DESCRIPTORS == False:
 
-  DESCRIPTOR._options = None
-  _ECHOREQUEST._serialized_start=31
-  _ECHOREQUEST._serialized_end=80
-  _ECHORESPONSE._serialized_start=82
-  _ECHORESPONSE._serialized_end=112
-  _ECHOSTREAMRESPONSE._serialized_start=114
-  _ECHOSTREAMRESPONSE._serialized_end=149
-  _ECHO._serialized_start=151
-  _ECHO._serialized_end=265
+
+_ECHO = _descriptor.ServiceDescriptor(
+  name='Echo',
+  full_name='echo.Echo',
+  file=DESCRIPTOR,
+  index=0,
+  serialized_options=None,
+  create_key=_descriptor._internal_create_key,
+  serialized_start=151,
+  serialized_end=265,
+  methods=[
+  _descriptor.MethodDescriptor(
+    name='Echo',
+    full_name='echo.Echo.Echo',
+    index=0,
+    containing_service=None,
+    input_type=_ECHOREQUEST,
+    output_type=_ECHORESPONSE,
+    serialized_options=None,
+    create_key=_descriptor._internal_create_key,
+  ),
+  _descriptor.MethodDescriptor(
+    name='EchoStream',
+    full_name='echo.Echo.EchoStream',
+    index=1,
+    containing_service=None,
+    input_type=_ECHOREQUEST,
+    output_type=_ECHOSTREAMRESPONSE,
+    serialized_options=None,
+    create_key=_descriptor._internal_create_key,
+  ),
+])
+_sym_db.RegisterServiceDescriptor(_ECHO)
+
+DESCRIPTOR.services_by_name['Echo'] = _ECHO
+
 # @@protoc_insertion_point(module_scope)

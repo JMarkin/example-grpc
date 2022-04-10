@@ -1,0 +1,6 @@
+[Unit]
+Description=app Service
+
+[Service]
+WorkingDirectory=/tmp
+ExecStart=python -m app

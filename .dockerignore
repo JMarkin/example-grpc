@@ -1,0 +1,9 @@
+*
+!app
+!buildfiles
+!protofiles/echo.proto
+!protofiles/__init__.py
+!poetry.lock
+!pyproject.toml
+!README.md
+
