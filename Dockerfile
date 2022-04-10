@@ -14,7 +14,7 @@ RUN poetry run poe protogen && poetry build -f sdist
 
 FROM fedora:37 as buildgrpcio
 
-RUN dnf install -y rpmdevtools python3-devel make automake gcc gcc-c++
+RUN dnf install -y git rpmdevtools python3-devel make automake gcc gcc-c++
 RUN python3 -m pip install -U pip setuptools Cython
 
 
@@ -38,16 +38,14 @@ RUN cd /tmp/grpc && \
 
 FROM fedora:37 as buildrpm
 
-RUN dnf install -y rpmdevtools
+RUN dnf install -y rpmdevtools 'dnf-command(builddep)'
+
 
 ENV HOME /root/
 RUN mkdir -p $HOME/rpmbuild/{BUILD,RPMS,SOURCES,SPECS,SRPMS} && \
     echo '%_topdir %{getenv:HOME}/rpmbuild' > $HOME/.rpmmacros
 
 WORKDIR $HOME
-
-RUN dnf install -y 'dnf-command(builddep)'
-
 
 COPY ./buildfiles/app.spec $HOME/rpmbuild/SPECS
 
