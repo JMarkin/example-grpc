@@ -1,42 +1,16 @@
+# example ci for packaging app
 FROM python:3.9-slim as ci
 
 RUN pip install poetry && mkdir /app
 WORKDIR /app
 
-COPY ./poetry.lock .
-COPY ./pyproject.toml .
-
-RUN poetry install --no-root
-
 COPY . /app
 
-RUN poetry run poe protogen && poetry build -f sdist
+RUN poetry build -f sdist
 
-FROM fedora:37 as buildgrpcio
+# base for rpmbuild
+FROM fedora:37 as buildrpmbase
 
-RUN dnf install -y git rpmdevtools python3-devel make automake gcc gcc-c++
-RUN python3 -m pip install -U pip setuptools Cython
-
-
-# build from soruce grpcio...
-# old rpm on repository
-ENV GRPC_VER v1.45.2
-
-RUN cd /tmp && \
-    git clone -b $GRPC_VER https://github.com/grpc/grpc && \
-    cd grpc && \
-    git submodule update --init
-
-
-RUN cd /tmp/grpc && \
-    python3 setup.py bdist_rpm && \
-    cd tools/distrib/python/grpcio_tools && \
-    python3 ../make_grpcio_tools.py && \
-    python3 setup.py bdist_rpm
-
-
-
-FROM fedora:37 as buildrpm
 
 RUN dnf install -y rpmdevtools 'dnf-command(builddep)'
 
@@ -47,15 +21,50 @@ RUN mkdir -p $HOME/rpmbuild/{BUILD,RPMS,SOURCES,SPECS,SRPMS} && \
 
 WORKDIR $HOME
 
-COPY ./buildfiles/app.spec $HOME/rpmbuild/SPECS
+# build grpcio, grpciotools from source...
+FROM buildrpmbase as buildgrpcio
 
-ENV SPEC=$HOME/rpmbuild/SPECS/app.spec
+RUN dnf install -y git
+
+ENV GRPC_VER v1.45.2
+
+RUN git clone -b $GRPC_VER https://github.com/grpc/grpc && \
+    cd grpc && \
+    git submodule update --init
+
+WORKDIR $HOME/grpc
+
+COPY ./buildfiles/grpcio.spec $HOME/rpmbuild/SPECS
+ENV SPEC=$HOME/rpmbuild/SPECS/grpcio.spec
 
 RUN dnf builddep -y --spec $SPEC
 
-COPY --from=buildgrpcio /tmp/grpc/python_build/bdist.linux-x86_64/rpm/RPMS/* $HOME/rpmbuild/RPMS/
+ENV GRPC_PYTHON_BUILD_WITH_CYTHON=1
 
-RUN dnf install -y $HOME/rpmbuild/RPMS/*.rpm
+RUN cd /tmp && \
+    ln -s ~/grpc grpcio-1.45.2 && \
+    tar -czf $HOME/rpmbuild/SOURCES/grpcio-1.45.2.tar.gz grpcio-1.45.2 && \
+    rpmbuild -ba $SPEC || \
+    dnf builddep -y $HOME/rpmbuild/SRPMS/* && \
+    rpmbuild -bb $SPEC
+
+# build grpcio_tools
+
+RUN cd ~/grpc/tools/distrib/python/grpcio_tools && \
+    python3 ../make_grpcio_tools.py && \
+    python3 setup.py bdist_rpm --binary-only --dist-dir $HOME/rpmbuild/RPMS/x86_64/
+
+
+# build app rpm
+FROM buildrpmbase as buildrpm
+
+COPY --from=buildgrpcio $HOME/rpmbuild/RPMS/x86_64/ $HOME/rpmbuild/RPMS/x86_64/
+RUN dnf install -y $HOME/rpmbuild/RPMS/x86_64/*.rpm
+
+COPY ./buildfiles/app.spec $HOME/rpmbuild/SPECS
+
+ENV SPEC=$HOME/rpmbuild/SPECS/app.spec
+RUN dnf builddep -y --spec $SPEC
 
 COPY --from=ci /app/dist/ $HOME/rpmbuild/SOURCES/
 
@@ -64,13 +73,30 @@ RUN rpmbuild -ba $SPEC || \
     rpmbuild -bb $SPEC
 
 
+# install app
 FROM fedora:37 as app
 
-COPY --from=buildrpm /root/rpmbuild/RPMS/ /tmp/
+COPY --from=buildrpm /root/rpmbuild/RPMS/x86_64/python3-app-* /tmp/
+COPY --from=buildrpm /root/rpmbuild/RPMS/x86_64/python3-grpcio-* /tmp/
 
-RUN dnf install -y systemd-units /tmp/noarch/*.rpm
+VOLUME ["/sys/fs/cgroup"]
+CMD ["/sbin/init"]
 
 EXPOSE 50051
-CMD [ "/sbin/init" ]
+
+
+RUN dnf -y install systemd /tmp/*.rpm && dnf clean all && \
+    (cd /lib/systemd/system/sysinit.target.wants/ ; for i in * ; do [ $i == systemd-tmpfiles-setup.service ] || rm -f $i ; done) ; \
+    rm -f /lib/systemd/system/multi-user.target.wants/* ;\
+    rm -f /etc/systemd/system/*.wants/* ;\
+    rm -f /lib/systemd/system/local-fs.target.wants/* ; \
+    rm -f /lib/systemd/system/sockets.target.wants/*udev* ; \
+    rm -f /lib/systemd/system/sockets.target.wants/*initctl* ; \
+    rm -f /lib/systemd/system/basic.target.wants/* ;\
+    rm -f /lib/systemd/system/anaconda.target.wants/* && \
+    rm -rf /tmp/* && \
+    rm -rf /var/cache/* && \
+    systemctl enable app
 
 STOPSIGNAL SIGRTMIN+3
+

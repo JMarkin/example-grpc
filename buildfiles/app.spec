@@ -7,14 +7,12 @@ License:        MIT
 URL:            https://github.com/jmarkin/app
 Source:         %{url}/archive/v%{version}/app-%{version}.tar.gz
 
-BuildArch:      noarch
 BuildRequires:  python3-devel
 BuildRequires:  pyproject-rpm-macros
 BuildRequires:  python3dist(poetry-core)
 BuildRequires:  python3dist(toml)
+BuildRequires:  grpcio-tools
 BuildRequires:  systemd-rpm-macros
-
-Requires:  systemd-units
 
 %global _description %{expand:
     Какое-то описание
@@ -34,13 +32,20 @@ Summary:        %{summary}
 %generate_buildrequires
 %pyproject_buildrequires
 
+%global debug_package %{nil}
+
 %post
-%systemd_user_post %{name}.service
+%systemd_post %{name}.service
 
 %preun
-%systemd_user_preun %{name}.service
+%systemd_preun %{name}.service
+
+%postun
+%systemd_postun_with_restart %{name}.service
+
 
 %build
+find . -name *.proto -exec python3 -m grpc_tools.protoc -I . --python_out=. --grpc_python_out=.  {} \;
 %pyproject_wheel
 
 

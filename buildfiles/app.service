@@ -4,3 +4,6 @@ Description=app Service
 [Service]
 WorkingDirectory=/tmp
 ExecStart=python3 -m app
+
+[Install]
+WantedBy=multi-user.target
