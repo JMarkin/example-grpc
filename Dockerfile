@@ -1,3 +1,5 @@
+# syntax=docker/dockerfile:1.2
+
 # example ci for packaging app
 FROM python:3.9-slim as ci
 
@@ -52,14 +54,14 @@ RUN cd /tmp && \
 
 RUN cd ~/grpc/tools/distrib/python/grpcio_tools && \
     python3 ../make_grpcio_tools.py && \
-    python3 setup.py bdist_rpm --binary-only --dist-dir $HOME/rpmbuild/RPMS/x86_64/
+    python3 setup.py bdist_rpm --binary-only --dist-dir $HOME/rpmbuild/RPMS/$(uname -i)/
 
 
 # build app rpm
 FROM buildrpmbase as buildrpm
 
-COPY --from=buildgrpcio $HOME/rpmbuild/RPMS/x86_64/ $HOME/rpmbuild/RPMS/x86_64/
-RUN dnf install -y $HOME/rpmbuild/RPMS/x86_64/*.rpm
+COPY --from=buildgrpcio $HOME/rpmbuild/RPMS/ $HOME/rpmbuild/RPMS
+RUN dnf install -y $HOME/rpmbuild/RPMS/$(uname -i)/*.rpm
 
 COPY ./buildfiles/app.spec $HOME/rpmbuild/SPECS
 
@@ -76,16 +78,13 @@ RUN rpmbuild -ba $SPEC || \
 # install app
 FROM fedora:37 as app
 
-COPY --from=buildrpm /root/rpmbuild/RPMS/x86_64/python3-app-* /tmp/
-COPY --from=buildrpm /root/rpmbuild/RPMS/x86_64/python3-grpcio-* /tmp/
-
 VOLUME ["/sys/fs/cgroup"]
 CMD ["/sbin/init"]
 
 EXPOSE 50051
 
 
-RUN dnf -y install systemd /tmp/*.rpm && dnf clean all && \
+RUN --mount=type=bind,from=buildrpm,source=/root/rpmbuild/RPMS/,target=/tmp/rpms dnf -y install systemd /tmp/rpms/$(uname -i)/*.rpm && dnf clean all && \
     (cd /lib/systemd/system/sysinit.target.wants/ ; for i in * ; do [ $i == systemd-tmpfiles-setup.service ] || rm -f $i ; done) ; \
     rm -f /lib/systemd/system/multi-user.target.wants/* ;\
     rm -f /etc/systemd/system/*.wants/* ;\
@@ -94,7 +93,6 @@ RUN dnf -y install systemd /tmp/*.rpm && dnf clean all && \
     rm -f /lib/systemd/system/sockets.target.wants/*initctl* ; \
     rm -f /lib/systemd/system/basic.target.wants/* ;\
     rm -f /lib/systemd/system/anaconda.target.wants/* && \
-    rm -rf /tmp/* && \
     rm -rf /var/cache/* && \
     systemctl enable app
 
