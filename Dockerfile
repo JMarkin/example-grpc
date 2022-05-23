@@ -17,4 +17,4 @@ COPY --from=ci /app/dist/ /tmp
 RUN pip install /tmp/*.tar.gz && rm -rf /tmp/*.tar.gz
 
 WORKDIR /tmp
-CMD ["python3 -m app"]
+CMD ["python -m app"]
