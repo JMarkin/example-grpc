@@ -17,4 +17,5 @@ COPY --from=ci /app/dist/ /tmp
 RUN pip install /tmp/*.tar.gz && rm -rf /tmp/*.tar.gz
 
 WORKDIR /tmp
+EXPOSE 50051
 CMD ["python -m app"]
